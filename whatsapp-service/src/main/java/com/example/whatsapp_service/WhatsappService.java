@@ -46,7 +46,7 @@ public class WhatsappService {
             session = new UserSession();
             sessions.put(phone, session);
         }
-session.getPhone(phone);
+session.getPhone();
         String response = processMessage(session, message, phone);
         sessions.put(phone, session);
         sendMessage(from, response);
