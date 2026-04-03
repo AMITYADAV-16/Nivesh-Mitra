@@ -1,0 +1,22 @@
+package com.example.whatsapp_service;
+
+public enum SessionState {
+    START,
+    ASKED_NAME,
+    ASKED_AGE,
+    ASKED_INCOME,
+    ASKED_EXPENSES,
+    ASKED_DEPENDENTS,
+    ASKED_GOAL,
+    ASKED_TARGET_AMOUNT,
+    ASKED_TARGET_YEARS,
+    ASKED_LANGUAGE,
+    ASKED_BIAS_Q1,
+    ASKED_BIAS_Q2,
+    ASKED_BIAS_Q3,
+    ASKED_BIAS_Q4,
+    ASKED_BIAS_Q5,
+    DONE,
+    ASKED_DID_INVEST,
+    ASKED_INVEST_AMOUNT
+}

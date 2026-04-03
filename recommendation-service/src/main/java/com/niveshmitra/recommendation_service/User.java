@@ -16,4 +16,6 @@ public class User {
     private Integer dependents;
     private String goal;
     private String preferredLanguage;
+    private Double targetAmount;
+    private Integer targetYears;
 }

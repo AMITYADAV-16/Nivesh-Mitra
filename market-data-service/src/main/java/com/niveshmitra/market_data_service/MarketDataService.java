@@ -35,22 +35,29 @@ public class MarketDataService {
 }
 
     public List<MutualFund> getFundsByCategory(String category) {
-    String url = "https://api.mfapi.in/mf/search?q={category}" + category;
-    try{
-        List<Map> response =restTemplate.getForObject(url, List.class, category);
+        // Map category to better MFAPI search terms with hardcoded popular Indian funds
+        Map<String, List<String>> categoryFundCodes = Map.of(
+                "small cap", List.of("120505", "125497", "119598", "118989"),  // Nippon, Axis, SBI, HDFC Small Cap
+                "large cap", List.of("120503", "118701", "119223", "118989"),  // Nippon, Mirae, Axis, HDFC Large Cap
+                "liquid",    List.of("119062", "120594", "118825", "119775")   // SBI, HDFC, Axis, Nippon Liquid
+        );
+
+        List<String> codes = categoryFundCodes.getOrDefault(
+                category.toLowerCase(),
+                categoryFundCodes.get("large cap") // default fallback
+        );
+
         List<MutualFund> funds = new ArrayList<>();
-        for(int i =0; i< Math.min(4 , response.size()); i++){
-            Map fund = response.get(i);
-            String code = String.valueOf(fund.get("schemeCode"));
-            String name = String.valueOf(fund.get("schemeName"));
-            MutualFund mf = new MutualFund();
-            mf.setSchemeCode(code);
-            mf.setSchemeName(name);
-            funds.add(mf);
+        for (String code : codes) {
+            try {
+                MutualFund fund = getMutualFundData(code);
+                funds.add(fund);
+            } catch (Exception e) {
+                // skip funds that fail, don't crash the whole list
+                System.err.println("Skipping fund " + code + ": " + e.getMessage());
+            }
         }
         return funds;
-    }catch (Exception e){
-        throw new RuntimeException("Could not fetch funds for: "+ category, e);
     }
     }
-}
+

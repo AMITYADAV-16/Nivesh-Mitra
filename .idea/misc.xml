@@ -10,6 +10,8 @@
         <option value="$PROJECT_DIR$/risk-profiling-service/pom.xml" />
         <option value="$PROJECT_DIR$/market-data-service/pom.xml" />
         <option value="$PROJECT_DIR$/recommendation-service/pom.xml" />
+        <option value="$PROJECT_DIR$/behavioral-bias-service/pom.xml" />
+        <option value="$PROJECT_DIR$/whatsapp-service/pom.xml" />
       </list>
     </option>
   </component>

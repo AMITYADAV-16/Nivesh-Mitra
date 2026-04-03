@@ -19,7 +19,9 @@ public class User {
     private Double monthlyIncome;
     private Double monthlyExpenses;
     private Integer dependents;
-    private String goal;
-    private String preferredLanguage;
-
+    private Double targetAmount;
+    private Integer targetYears;
+private String goal;
+private String phone;
+private String preferredLanguage;
 }
