@@ -1,1 +1,21 @@
+# Environment variables - NEVER push these
 .env
+*.env
+
+# Java build files
+**/target/
+**/*.class
+**/*.jar
+
+# IDE files
+.idea/
+*.iml
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db

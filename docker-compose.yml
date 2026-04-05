@@ -1,103 +1,83 @@
+version: "3.9"
+
 services:
 
-  # ─── Infrastructure ───────────────────────────────────────────
+  # ─── Infrastructure ─────────────────────────────
 
   postgres:
     image: postgres:15
     container_name: niveshmitra-postgres
+    restart: always
     environment:
       POSTGRES_DB: niveshmitra
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   redis:
     image: redis:7-alpine
     container_name: niveshmitra-redis
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    restart: always
 
-  # ─── Eureka Server ────────────────────────────────────────────
+  # ─── Eureka Server ─────────────────────────────
 
   eureka-server:
     build: ./eureka-server
     container_name: eureka-server
+    restart: always
     ports:
       - "8761:8761"
 
-  # ─── Microservices ────────────────────────────────────────────
+  # ─── Microservices ─────────────────────────────
 
   user-profile-service:
     build: ./user-profile-service
     container_name: user-profile-service
-    ports:
-      - "8081:8081"
+    restart: always
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/niveshmitra
       SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
-      postgres:
-        condition: service_healthy
-      eureka-server:
-        condition: service_started
+      - postgres
+      - eureka-server
 
   risk-profiling-service:
     build: ./risk-profiling-service
     container_name: risk-profiling-service
-    ports:
-      - "8083:8083"
+    restart: always
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
 
   market-data-service:
     build: ./market-data-service
     container_name: market-data-service
-    ports:
-      - "8084:8084"
+    restart: always
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
     depends_on:
-      redis:
-        condition: service_healthy
-      eureka-server:
-        condition: service_started
+      - redis
+      - eureka-server
 
   behavioral-bias-service:
     build: ./behavioral-bias-service
     container_name: behavioral-bias-service
-    ports:
-      - "8086:8086"
+    restart: always
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
 
   recommendation-service:
     build: ./recommendation-service
     container_name: recommendation-service
-    ports:
-      - "8085:8085"
+    restart: always
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_AI_OPENAI_API_KEY: ${GROQ_API_KEY}
@@ -106,35 +86,31 @@ services:
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
     depends_on:
-      redis:
-        condition: service_healthy
-      eureka-server:
-        condition: service_started
+      - redis
+      - eureka-server
 
   whatsapp-service:
     build: ./whatsapp-service
     container_name: whatsapp-service
-    ports:
-      - "8087:8087"
+    restart: always
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
       TWILIO_WHATSAPP_NUMBER: ${TWILIO_WHATSAPP_NUMBER}
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
 
   api-gateway:
     build: ./api-gateway
     container_name: api-gateway
+    restart: always
     ports:
       - "8082:8082"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
     depends_on:
-      eureka-server:
-        condition: service_started
+      - eureka-server
 
 volumes:
   postgres_data:

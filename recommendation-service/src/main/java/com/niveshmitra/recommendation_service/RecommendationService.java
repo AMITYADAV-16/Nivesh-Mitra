@@ -1,7 +1,10 @@
 package com.niveshmitra.recommendation_service;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
+import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
+//import org.springframework.retry.annotation.CircuitBreaker;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,6 +18,8 @@ public class RecommendationService {
     @Autowired private BiasClient biasClient;
     @Autowired private ChatClient chatClient;
 
+    @Retry(name = "groq-api", fallbackMethod = "fallbackAI")
+    @CircuitBreaker(name = "groq-api", fallbackMethod = "fallbackAI")
     public String getRecommendation(Long userId, List<String> biasAnswers) {
 
         User user;
@@ -170,17 +175,16 @@ Keep EVERY section SHORT. WhatsApp messages — not essays.
                 langInstruction
         );
 
-        String aiResponse;
-        try {
-            aiResponse = chatClient.prompt().user(prompt).call().content();
-        } catch (Exception e) {
-            aiResponse = "";
-        }
+        String aiResponse = chatClient.prompt().user(prompt).call().content();
 
         // Parse AI response and build final formatted message
         return buildFormattedPlan(user, riskBand, biasName, biasTip,
                 topFunds, startSip, requiredSip, targetAmount, targetYears,
                 projectedValue, year3Sip, year5Sip, savings, aiResponse, language);
+    }
+
+    public String fallbackAI(Long userId, List<String> biasAnswers, Exception e) {
+        return "⚠️ AI service is temporarily unavailable. Please try again later.";
     }
 
     private String buildFormattedPlan(
