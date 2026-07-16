@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "recommendation-service")
+@FeignClient(name = "recommendation-service", configuration = RecommendationFeignConfig.class)
 public interface RecommendationClient {
 
     @PostMapping("/recommend/{userId}")

@@ -18,7 +18,7 @@ public class UserController {
     }
 @GetMapping("/phone/{phone}")
     public User getUserByPhone(@PathVariable String phone){
-        return (User) userRepository.findByphone(phone)
+        return userRepository.findByPhone(phone)
                 .orElseThrow(() -> new RuntimeException("User not found " + phone));
 }
 @GetMapping

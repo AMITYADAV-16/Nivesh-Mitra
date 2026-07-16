@@ -95,11 +95,12 @@ public class RecommendationService {
             default -> "Reply in simple, friendly English.";
         };
 
-        // Fund list for prompt
+        // Fund list for prompt — escape any '%' in fund names to avoid MissingFormatArgumentException
         StringBuilder fundNames = new StringBuilder();
         for (int i = 0; i < topFunds.size(); i++) {
+            String safeName = topFunds.get(i).getSchemeName().replace("%", "%%");
             fundNames.append(i + 1).append(". ")
-                    .append(topFunds.get(i).getSchemeName()).append("\n");
+                    .append(safeName).append("\n");
         }
 
         // Build fund allocation prompt section
@@ -118,16 +119,17 @@ public class RecommendationService {
                 ALLOC: <percentage>%%
                 AMOUNT: Rs <amount>/month
                 WHY: <one sentence reason>
-                """, fundNames, startSip)
-                : "Suggest 2-3 suitable funds with allocation percentages summing to 100%.";
+                """, fundNames.toString(), startSip)
+                : "Suggest 2-3 suitable funds with allocation percentages summing to 100%%.";  // %% so outer String.format renders it as % if needed
 
-        // Bias section
+        // Bias section — escape '%' in biasName to avoid format specifier issues
+        String safeBiasName = biasName.replace("%", "%%");
         String biasPrompt = !biasName.isBlank()
                 ? String.format("""
                 User has '%s' behavioral bias.
                 Write ONE punchy line (max 15 words) warning them about this bias.
                 Format: BIAS_WARNING: <your line>
-                """, biasName)
+                """, safeBiasName)
                 : "";
 
         // Step-up projection
@@ -161,18 +163,18 @@ Format: FEASIBILITY: <your lines>
 Language: %s
 Keep EVERY section SHORT. WhatsApp messages — not essays.
 """,
-                user.getName(), user.getAge(),
+                user.getName().replace("%", "%%"), user.getAge(),
                 user.getMonthlyIncome(), savings,
-                user.getGoal(), targetYears,
-                formatAmount(targetAmount),
+                user.getGoal().replace("%", "%%"), targetYears,
+                formatAmount(targetAmount).replace("%", "%%"),
                 requiredSip, startSip,
-                riskBand,
+                riskBand.replace("%", "%%"),
                 allocationPrompt,
                 biasPrompt,
                 requiredSip, savings, startSip,
                 year3Sip, year5Sip,
-                formatAmount(projectedValue),
-                langInstruction
+                formatAmount(projectedValue).replace("%", "%%"),
+                langInstruction.replace("%", "%%")
         );
 
         String aiResponse = chatClient.prompt().user(prompt).call().content();

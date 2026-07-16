@@ -7,8 +7,11 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import feign.FeignException;
+import feign.RetryableException;
 
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -46,7 +49,7 @@ public class WhatsappService {
             session = new UserSession();
             sessions.put(phone, session);
         }
-session.getPhone();
+        session.setPhone(phone);
         String response = processMessage(session, message, phone);
         sessions.put(phone, session);
         sendMessage(from, response);
@@ -340,55 +343,28 @@ profile.setPhone(session.getPhone());
                     session.getBiasAnswers()
             );
 
-            return formatFinalResponse(session, recommendation);
+            return recommendation;
 
+        } catch (RetryableException e) {
+            return "Sorry, the recommendation service is taking too long. Please try again in a few seconds.";
+        } catch (FeignException e) {
+            return "Sorry, recommendation service is unavailable. Please try again later.";
         } catch (Exception e) {
-            return "⚠️ Kuch problem aa gayi plan banane mein. *Hi* bhejo dobara try karne ke liye.";
+            return "Sorry, something went wrong while generating the recommendation. Please try again later.";
         }
     }
 
+    /**
+     * NOTE: This method is kept for reference only.
+     * The recommendation from RecommendationService.buildFormattedPlan() already contains
+     * the complete, final formatted plan (fund allocation, step-up table, bias warning, safety etc.).
+     * Do NOT re-wrap or truncate it — return it directly.
+     * The old 300-char truncation was the root cause of the empty "Suggested Plan" section bug.
+     */
     private String formatFinalResponse(UserSession session, String recommendation) {
-        String targetStr = formatAmount(session.getTargetAmount());
-        double requiredSip = calculateRequiredSIP(
-                session.getTargetAmount(), session.getTargetYears(), 0.12);
-
-        String header = String.format(
-                "📊 %s apka Investment Plan\n\n" +
-                        "━━━━━━━━━━━━━━━━━\n\n" +
-
-                        "🎯 Goal: %s\n" +
-                        "💰 Target: %s\n" +
-                        "⏳ Time: %d years\n\n" +
-
-                        "📈 Required SIP: Rs %,.0f/month\n\n" +
-
-                        "━━━━━━━━━━━━━━━━━\n\n" +
-
-                        "⚠️ Feasibility Check\n" +
-                        "%s\n\n" +
-
-                        "━━━━━━━━━━━━━━━━━\n\n" +
-
-                        "📦 Suggested Plan\n%s\n\n" +
-
-                        "━━━━━━━━━━━━━━━━━\n\n" +
-
-                        "🛡️ Safety\n" +
-                        "3–6 months expenses ka emergency fund maintain karein.\n\n" +
-
-                        "━━━━━━━━━━━━━━━━━",
-                session.getName(),
-                session.getGoal(),
-                targetStr,
-                session.getTargetYears(),
-                requiredSip
-        );
-
-        String footer = "\n\n━━━━━━━━━━━━━━━━━\n" +
-                "💡 _Hi bhejo naya plan banane ke liye_\n" +
-                "   _Nivesh Mitra — aapka financial dost_";
-
-        return header + recommendation + footer;
+        // Pass through the full recommendation as-is.
+        // RecommendationService already formats everything correctly.
+        return recommendation != null ? recommendation : "";
     }
 
     private String getBiasQ1(String lang) {
@@ -460,10 +436,38 @@ profile.setPhone(session.getPhone());
     }
 
     private void sendMessage(String to, String body) {
-        Message.creator(
-                new PhoneNumber(to),
-                new PhoneNumber("whatsapp:" + fromNumber),
-                body
-        ).create();
+        if (body == null) {
+            body = "";
+        }
+        for (String chunk : splitMessage(body, 1600)) {
+            Message.creator(
+                    new PhoneNumber(to),
+                    new PhoneNumber("whatsapp:" + fromNumber),
+                    chunk
+            ).create();
+        }
+    }
+
+    private List<String> splitMessage(String text, int maxLength) {
+        List<String> chunks = new ArrayList<>();
+        int start = 0;
+        while (start < text.length()) {
+            int end = Math.min(text.length(), start + maxLength);
+            if (end < text.length()) {
+                int split = Math.max(text.lastIndexOf('\n', end), text.lastIndexOf(' ', end));
+                if (split > start) {
+                    end = split;
+                }
+            }
+            String chunk = text.substring(start, end).trim();
+            if (!chunk.isEmpty()) {
+                chunks.add(chunk);
+            }
+            start = end;
+            while (start < text.length() && Character.isWhitespace(text.charAt(start))) {
+                start++;
+            }
+        }
+        return chunks;
     }
 }

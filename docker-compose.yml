@@ -1,4 +1,3 @@
-version: "3.9"
 
 services:
 
@@ -8,6 +7,8 @@ services:
     image: postgres:15
     container_name: niveshmitra-postgres
     restart: always
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: niveshmitra
       POSTGRES_USER: postgres
@@ -28,6 +29,8 @@ services:
     restart: always
     ports:
       - "8761:8761"
+    environment:
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
 
   # ─── Microservices ─────────────────────────────
 
@@ -35,11 +38,14 @@ services:
     build: ./user-profile-service
     container_name: user-profile-service
     restart: always
+    env_file:
+      - .env
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/niveshmitra
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     depends_on:
       - postgres
       - eureka-server
@@ -50,6 +56,7 @@ services:
     restart: always
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     depends_on:
       - eureka-server
 
@@ -61,6 +68,7 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     depends_on:
       - redis
       - eureka-server
@@ -71,6 +79,7 @@ services:
     restart: always
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     depends_on:
       - eureka-server
 
@@ -78,6 +87,10 @@ services:
     build: ./recommendation-service
     container_name: recommendation-service
     restart: always
+    ports:
+      - "8085:8085"
+    env_file:
+      - .env
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       SPRING_AI_OPENAI_API_KEY: ${GROQ_API_KEY}
@@ -85,6 +98,7 @@ services:
       SPRING_AI_OPENAI_CHAT_OPTIONS_MODEL: llama-3.3-70b-versatile
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     depends_on:
       - redis
       - eureka-server
@@ -93,11 +107,16 @@ services:
     build: ./whatsapp-service
     container_name: whatsapp-service
     restart: always
+    ports:
+      - "8087:8087"
+    env_file:
+      - .env
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
       TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
       TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
       TWILIO_WHATSAPP_NUMBER: ${TWILIO_WHATSAPP_NUMBER}
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     depends_on:
       - eureka-server
 
@@ -109,6 +128,7 @@ services:
       - "8082:8082"
     environment:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+      SPRING_CLOUD_COMPATIBILITY_VERIFIER_ENABLED: "false"
     depends_on:
       - eureka-server
 
