@@ -31,33 +31,33 @@
 
 ## Why I built this
 
-A lot of people around me — family, friends, people I grew up with — know they *should* be investing but never actually start. Not because they don't have the money, but because every investment app feels like it was built for someone who already knows finance. Dashboards, jargon, risk profiles you have to fill out without knowing what half the terms mean.
+A lot of people around me family, friends, people I grew up with wants to invest but don't know hwere and which SIP to invest in but because every investment app feels like it was built for someone who already knows finance. Dashboards, jargon, risk profiles you have to fill out without knowing what half the terms mean.
 
 Meanwhile, everyone already has WhatsApp open all day.
 
-So the idea behind Nivesh Mitra (literally "investment friend" in Hindi) was: what if the advisor came to you, through a normal conversation, in whatever language you're comfortable in — instead of you having to go figure out a new app? That's what this project is.
+So the idea behind Nivesh Mitra was what if the advisor came to you, through a normal conversation, in whatever language you're comfortable in instead of you having to go figure out a new app? That's what this project is.
 
-It also became a good excuse to actually build something with a proper microservices setup instead of just reading about it — service discovery, an API gateway, circuit breakers, the whole thing. This README covers both sides: what the product does, and how it's put together underneath.
+It also became a good excuse to actually build something with a proper microservices setup instead of just reading about it service discovery, an API gateway, circuit breakers, the whole thing. This README covers both sides what the product does, and how it's put together underneath.
 
 ---
 
 ## What it does
 
-You chat with it like you'd chat with a friend who happens to know finance. It asks about 10 simple questions — your income, expenses, what you're saving for, how many years you've got — and then runs a short 5-question quiz that's actually a behavioral finance instrument in disguise. It's figuring out whether you're the type to panic-sell when the market dips, or follow the crowd into whatever's trending, or hold on for way too long out of stubbornness.
+You chat with it like you'd chat with a friend who happens to know finance. It asks about 10 simple questions your income, expenses, what you're saving for, how many years you've got and then runs a short 5-question quiz that's actually a behavioral finance instrument in disguise. It's figuring out whether you're the type to panic sell when the market dips, or follow the crowd into whatever's trending, or hold on for way too long out of stubbornness.
 
 Once it has all that, it hands everything off to an LLM (Groq's LLaMA 3.3 70B) which puts together an actual plan:
 
 - A monthly SIP number, based on your real target and timeline
 - A 10% yearly step-up so the plan grows with your income
-- A reality check — if what you *should* invest is more than you can afford, it tells you and adjusts
+- A reality check  if what you *should* invest is more than you can afford, it tells you and adjusts
 - A 3-fund split matched to your risk profile
 - A note on your investing personality, tailored to whichever bias the quiz picked up
-- A basic emergency-fund reminder before any of the SIP stuff even starts
+- A basic emergency fund reminder before any of the SIP stuff even starts
 
 All in Hindi, English, or Hinglish, whichever you pick at the start.
 
 ---
-
+Here is the demo video link -> https://drive.google.com/file/d/1MCTmzFKOup26rAXCs5J9TtuTzC3TwtPJ/view?usp=drivesdk
 ## Architecture
 
 It's 8 Spring Boot services behind a gateway, with Eureka handling discovery so nothing has hardcoded URLs to other services. Roughly:
@@ -99,9 +99,9 @@ PostgreSQL        Redis
 ──────────────────────────────────────
 ```
 
-**Why split it into 8 services instead of one app?** Mostly because I wanted to actually practice the patterns — Feign clients for inter-service calls, Resilience4j circuit breakers on the Groq calls (the AI API is the one thing most likely to fail or time out), Eureka for discovery instead of hardcoded ports. It's more moving parts than a project like this strictly needs, but that was kind of the point.
+**Why split it into 8 services instead of one app?** Mostly because I wanted to actually practice the patterns Feign clients for inter-service calls, Resilience4j circuit breakers on the Groq calls (the AI API is the one thing most likely to fail or time out), Eureka for discovery instead of hardcoded ports. It's more moving parts than a project like this strictly needs, but that was kind of the point.
 
-**Worth knowing:** conversation state currently lives in memory in `whatsapp-service`, which means a restart wipes anyone's in-progress conversation. Moving that to Redis is the first thing on my list — see [What's next](#whats-next).
+**Worth knowing:** conversation state currently lives in memory in `whatsapp-service`, which means a restart wipes anyone's in-progress conversation. Moving that to Redis is the first thing on my list see [What's next](#whats-next).
 
 ---
 
@@ -209,7 +209,7 @@ Bot:   ━━━━━━━━━━━━━━━━━
 
 </details>
 
-If you want to poke at it yourself, it runs locally with one Docker Compose command — see [Running it locally](#running-it-locally).
+If you want to poke at it yourself, it runs locally with one Docker Compose command see [Running it locally](#running-it-locally).
 
 ---
 
@@ -225,7 +225,7 @@ Five questions, each one mapped to a classic behavioral finance bias:
 | How do you invest Rs 50,000? | Overconfidence |
 | How often do you check your portfolio? | Status quo bias |
 
-Whatever bias comes out dominant gets fed straight into the prompt sent to Groq, so the plan's tone actually addresses it — someone who's loss-averse gets nudged toward SIPs over lump-sum investing, someone prone to herd mentality gets a diversification reminder, and so on.
+Whatever bias comes out dominant gets fed straight into the prompt sent to Groq, so the plan's tone actually addresses it someone who's loss-averse gets nudged toward SIPs over lump-sum investing, someone prone to herd mentality gets a diversification reminder, and so on.
 
 ---
 
@@ -352,7 +352,7 @@ All credentials go through `.env`, which is gitignored — nothing sensitive sit
 
 ## Disclaimer
 
-This isn't financial advice — it's an educational project. Please don't make real investment decisions off a chatbot output without talking to a SEBI-registered advisor first. Mutual funds are subject to market risk. Read the scheme documents. All the usual disclaimers apply — and they apply for real here too.
+This isn't financial advice it's an educational project. Please don't make real investment decisions off a chatbot output without talking to a SEBI-registered advisor first. Mutual funds are subject to market risk. Read the scheme documents. All the usual disclaimers apply — and they apply for real here too.
 
 ---
 
@@ -364,7 +364,7 @@ MIT — see [LICENSE](LICENSE).
 
 ## About me
 
-**Amit Yadav** — CSE student, building in public.
+**Amit Yadav** — B-Tech student, building in public.
 
 - GitHub: [@AMITYADAV-16](https://github.com/AMITYADAV-16)
 - LinkedIn: [Amit Yadav](https://www.linkedin.com/in/amit-yadav-0b1126300/)
