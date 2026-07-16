@@ -310,18 +310,6 @@ Join the sandbox from your own WhatsApp, send `Hi`, and it should start the conv
 
 ---
 
-## API docs
-
-Each service exposes Swagger via springdoc-openapi, accessible at:
-
-- `localhost:8081/swagger-ui.html` — user profiles
-- `localhost:8083/swagger-ui.html` — risk profiling
-- `localhost:8084/swagger-ui.html` — market data
-- `localhost:8086/swagger-ui.html` — behavioral bias
-- `localhost:8085/swagger-ui.html` — recommendations
-
----
-
 ## Patterns used
 
 - **API Gateway** — one door in, instead of exposing 8 services directly
